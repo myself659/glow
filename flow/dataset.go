@@ -9,12 +9,12 @@ func (d *Dataset) GetShards() []*DatasetShard {
 }
 
 type Dataset struct {
-	Id                  int
+	Id                  int // FlowContext 
 	context             *FlowContext
-	Type                reflect.Type
-	Shards              []*DatasetShard
+	Type                reflect.Type    //反射类型（type data 两个成员组成）
+	Shards              []*DatasetShard // 多个数据分片
 	Step                *Step
-	ReadingSteps        []*Step
+	ReadingSteps        []*Step         //从多个读取
 	
 	// External[Input|Output]Chans are channels for reading and outputing
 	// data from and to external sources; meaning that they are not managed
@@ -63,7 +63,7 @@ type KeyValuesValues struct {
 }
 
 var (
-	KeyValueType        = reflect.TypeOf(KeyValue{})
+	KeyValueType        = reflect.TypeOf(KeyValue{}) // 获得结构体KeyValue的反射类型
 	KeyValueValueType   = reflect.TypeOf(KeyValueValue{})
 	KeyValuesType       = reflect.TypeOf(KeyValues{})
 	KeyValuesValuesType = reflect.TypeOf(KeyValuesValues{})

@@ -17,14 +17,14 @@ import (
 //   3. return no value
 //   4. return no value, but last parameter is a output channel
 func (d *Dataset) Map(f interface{}) *Dataset {
-	outType := guessFunctionOutputType(f)
-	ret, step := add1ShardTo1Step(d, outType)
+	outType := guessFunctionOutputType(f)     //获取本step的输出类型
+	ret, step := add1ShardTo1Step(d, outType) // 加入流程，非第一步流程
 	step.Name = "Map"
-	step.Function = func(task *Task) {
+	step.Function = func(task *Task) { //本step处理函数
 
-		invokeMapFunc := _buildMapperFunction(f, task)
+		invokeMapFunc := _buildMapperFunction(f, task) //生成map处理函数
 
-		for input := range task.InputChan() {
+		for input := range task.InputChan() { // 从task中接收，也就上一步输出结果
 			invokeMapFunc(input)
 		}
 		// println("exiting d:", d.Id, "step:", step.Id, "task:", task.Id)
@@ -32,7 +32,7 @@ func (d *Dataset) Map(f interface{}) *Dataset {
 	return ret
 }
 
-func _buildMapperFunction(f interface{}, task *Task) func(input reflect.Value) {
+func _buildMapperFunction(f interface{}, task *Task) func(input reflect.Value) { // 生成map step函数
 	fn, ft := reflect.ValueOf(f), reflect.TypeOf(f)
 
 	var outChan reflect.Value
@@ -48,7 +48,7 @@ func _buildMapperFunction(f interface{}, task *Task) func(input reflect.Value) {
 
 // if last parameter in the function is a channel
 // use the channel element type as output type
-func _buildMapperFunctionWithChannel(fn, outChan reflect.Value) func(input reflect.Value) {
+func _buildMapperFunctionWithChannel(fn, outChan reflect.Value) func(input reflect.Value) { //
 	return func(input reflect.Value) {
 		switch input.Type() {
 		case KeyValueType:
@@ -85,18 +85,19 @@ func _functionCallWithChanOutput(fn reflect.Value, outChan reflect.Value, inputs
 	return fn.Call(args)
 }
 
+// 调用反射函数
 func _functionCall(fn reflect.Value, inputs ...interface{}) []reflect.Value {
 	var args []reflect.Value
-	for _, input := range inputs {
-		args = append(args, reflect.ValueOf(input))
+	for _, input := range inputs { // 拼装反射函数的指针
+		args = append(args, reflect.ValueOf(input)) //获取接口的反射值
 	}
 	return fn.Call(args)
 }
 
 func _functionCallBasedOnInputType(fn, input reflect.Value) (outs []reflect.Value) {
-	switch input.Type() {
+	switch input.Type() { // 获取reflect.Value的类似
 	case KeyValueType:
-		kv := input.Interface().(KeyValue)
+		kv := input.Interface().(KeyValue) // 先反射值取出接口，再将接口转化具体的类型
 		outs = _functionCall(fn, kv.Key, kv.Value)
 	case KeyValueValueType:
 		kv := input.Interface().(KeyValueValue)
@@ -119,10 +120,10 @@ func (d *Dataset) Filter(f interface{}) *Dataset {
 	ret.IsKeyPartitioned = d.IsKeyPartitioned
 	ret.IsKeyLocalSorted = d.IsKeyLocalSorted
 	step.Name = "Filter"
-	step.Function = func(task *Task) {
-		fn := reflect.ValueOf(f)
+	step.Function = func(task *Task) { //定义函数
+		fn := reflect.ValueOf(f) //反射值
 		outChan := task.Outputs[0].WriteChan
-		for input := range task.InputChan() {
+		for input := range task.InputChan() { //接收数据
 			outs := _functionCallBasedOnInputType(fn, input)
 			if len(outs) > 0 && outs[0].Bool() {
 				outChan.Send(input)

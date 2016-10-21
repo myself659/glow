@@ -12,9 +12,9 @@ import (
 type Task struct {
 	Id         int
 	Inputs     []*DatasetShard
-	Outputs    []*DatasetShard
+	Outputs    []*DatasetShard //  task的输出
 	Step       *Step
-	InputChans []chan reflect.Value
+	InputChans []chan reflect.Value // 反射类型slice
 }
 
 func (step *Step) NewTask() (task *Task) {
@@ -30,7 +30,7 @@ func (step *Step) NewTask() (task *Task) {
 
 func (t *Task) RunTask() {
 	// println("start", t.Name())
-	t.Step.Function(t)
+	t.Step.Function(t) // 调用该任务对应step的处理函数
 	for _, out := range t.Outputs {
 		// println(t.Name(), "close WriteChan of", out.Name())
 		out.WriteChan.Close()

@@ -6,11 +6,11 @@ import (
 
 type Step struct {
 	Id       int
-	Inputs   []*Dataset
-	Output   *Dataset
-	Function func(*Task)
-	Tasks    []*Task
-	Name     string
+	Inputs   []*Dataset  // 输入数据
+	Output   *Dataset    // 输出数据
+	Function func(*Task) // 任务处理函数
+	Tasks    []*Task     // 任务集
+	Name     string      //任务名
 }
 
 func (s *Step) RunStep() {

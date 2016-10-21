@@ -58,7 +58,7 @@ func (d *Dataset) SaveBytesToFile(fname string) {
 
 func (d *Dataset) SaveTextToFile(fname string) {
 	outChan := make(chan string)
-	d.AddOutput(outChan)
+	d.AddOutput(outChan) // 设置输出接收通道
 
 	file, err := os.Create(fname)
 	if err != nil {
@@ -70,7 +70,7 @@ func (d *Dataset) SaveTextToFile(fname string) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for line := range outChan {
+		for line := range outChan { //接收上一次输出
 			file.WriteString(line)
 			file.WriteString("\n")
 		}
@@ -78,7 +78,7 @@ func (d *Dataset) SaveTextToFile(fname string) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		d.Run()
+		d.Run() // 启动执行这个流程
 	}()
 
 	wg.Wait()

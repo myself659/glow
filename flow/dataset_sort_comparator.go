@@ -6,15 +6,16 @@ import (
 	"time"
 )
 
+// 根据类型返回对应比较函数指针，作为接口类型返回
 func _getLessThanComparatorByKeyValue(key reflect.Value) (funcPointer interface{}) {
-	dt := key.Type()
-	if key.Kind() == reflect.Interface {
+	dt := key.Type()                     // 获得反射值的类型
+	if key.Kind() == reflect.Interface { // 是接口类型，进一步获得接口对应的类型
 		dt = reflect.TypeOf(key.Interface())
 	}
-	if dt.String() == "time.Time" {
+	if dt.String() == "time.Time" { // 字符符值为时间类型
 		return func(a, b time.Time) bool { return a.Before(b) }
 	}
-	switch dt.Kind() {
+	switch dt.Kind() { //具体类型
 	case reflect.Int:
 		funcPointer = func(a, b int) bool { return a < b }
 	case reflect.Int8:
@@ -55,9 +56,9 @@ func getLessThanComparator(datasetType reflect.Type, key reflect.Value,
 		lessThanFuncValue = reflect.ValueOf(_getLessThanComparatorByKeyValue(v))
 	}
 	if datasetType == KeyValueType {
-		return func(a interface{}, b interface{}) bool {
-			ret := _functionCall(lessThanFuncValue,
-				a.(KeyValue).Key,
+		return func(a interface{}, b interface{}) bool { // 返回函数，用于比较两个key大小
+			ret := _functionCall(lessThanFuncValue, // 调用反射函数
+				a.(KeyValue).Key, //  转化为KeyValue，获取key，作为反射函数的入参
 				b.(KeyValue).Key,
 			)
 			return ret[0].Bool()

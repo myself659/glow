@@ -4,13 +4,13 @@ import (
 	"reflect"
 )
 
-func guessFunctionOutputType(f interface{}) reflect.Type {
+func guessFunctionOutputType(f interface{}) reflect.Type { // 获取函数返回值,返回值类型为reflect.Type
 	ft := reflect.TypeOf(f)
 	if ft.In(ft.NumIn()-1).Kind() == reflect.Chan {
 		return ft.In(ft.NumIn() - 1).Elem()
 	}
 	if ft.NumOut() == 1 {
-		return ft.Out(0)
+		return ft.Out(0) // 值类型
 	}
 	if ft.NumOut() == 2 {
 		return KeyValueType

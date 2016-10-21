@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type DatasetShard struct {
+type DatasetShard struct { // Êý¾Ý·ÖÆ¬
 	Id           int
 	Parent       *Dataset
 	WriteChan    reflect.Value

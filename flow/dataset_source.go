@@ -10,20 +10,20 @@ import (
 
 // Source returns a new Dataset which evenly distributes the data items produced by f
 // among multiple shards. f must be a function defined in the form func(chan <some_type>).
-func (fc *FlowContext) Source(f interface{}, shard int) (ret *Dataset) {
-	ret = fc.newNextDataset(shard, guessFunctionOutputType(f))
-	step := fc.AddOneToAllStep(nil, ret)
+func (fc *FlowContext) Source(f interface{}, shard int) (ret *Dataset) { // 函数变量用接口表示
+	ret = fc.newNextDataset(shard, guessFunctionOutputType(f)) //
+	step := fc.AddOneToAllStep(nil, ret)                       //  加入整个流程
 	step.Name = "Source"
-	step.Function = func(task *Task) {
-		ctype := reflect.ChanOf(reflect.BothDir, ret.Type)
-		outChan := reflect.MakeChan(ctype, 0)
-		fn := reflect.ValueOf(f)
+	step.Function = func(task *Task) { // 设置source 阶段的处理函数，获取输入
+		ctype := reflect.ChanOf(reflect.BothDir, ret.Type) //获取chan类型
+		outChan := reflect.MakeChan(ctype, 0)              //根据类型创建chan
+		fn := reflect.ValueOf(f)                           // f是函数
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			defer outChan.Close()
-			fn.Call([]reflect.Value{outChan})
+			fn.Call([]reflect.Value{outChan}) // 调用本文件第57行的函数
 		}()
 
 		wg.Add(1)
@@ -33,10 +33,10 @@ func (fc *FlowContext) Source(f interface{}, shard int) (ret *Dataset) {
 			var t reflect.Value
 			i := 0
 			for ok := true; ok; {
-				if t, ok = outChan.Recv(); ok {
-					task.Outputs[i].WriteChan.Send(t)
+				if t, ok = outChan.Recv(); ok { // 从反射建立通道中接收
+					task.Outputs[i].WriteChan.Send(t) // 通过反射发送给输出通道
 					i++
-					if i == shard {
+					if i == shard { // 一个输入转化shard个输出
 						i = 0
 					}
 				}
@@ -52,7 +52,7 @@ func (fc *FlowContext) Source(f interface{}, shard int) (ret *Dataset) {
 // TextFile returns a new Dataset which reads the text file fname line by line,
 // and distributes them evenly among multiple shards.
 func (fc *FlowContext) TextFile(fname string, shard int) (ret *Dataset) {
-	fn := func(out chan string) {
+	fn := func(out chan string) { //从文件中读取字符，输出到通道
 		file, err := os.Open(fname)
 		if err != nil {
 			// FIXME collect errors

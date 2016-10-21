@@ -65,7 +65,7 @@ func (fc *FlowContext) Run() {
 	}
 }
 
-func (fc *FlowContext) runFlowContextInStandAloneMode() {
+func (fc *FlowContext) runFlowContextInStandAloneMode() { // 单机执行模式
 
 	var wg sync.WaitGroup
 
@@ -80,7 +80,7 @@ func (fc *FlowContext) runFlowContextInStandAloneMode() {
 				wg.Add(1)
 				go func(input *Dataset) {
 					defer wg.Done()
-					input.RunDatasetInStandAloneMode()
+					input.RunDatasetInStandAloneMode() //针对输入进行处理，输入就是各种各样的数据
 				}(input)
 				isDatasetStarted[input.Id] = true
 			}

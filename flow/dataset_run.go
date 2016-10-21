@@ -7,7 +7,7 @@ import (
 	"github.com/chrislusf/glow/netchan"
 )
 
-func (d *Dataset) RunDatasetInStandAloneMode() {
+func (d *Dataset) RunDatasetInStandAloneMode() { // 单机模式下输入数据处理
 	var wg sync.WaitGroup
 
 	if len(d.ExternalInputChans) > 0 {
